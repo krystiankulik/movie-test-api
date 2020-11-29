@@ -7,7 +7,7 @@ export interface TestMongoConn {
 }
 async function getMongoConnection(): Promise<TestMongoConn> {
   const mongod = new MongoMemoryServer();
-  const url = await mongod.getConnectionString();
+  const url = await mongod.getUri();
   await mongoose.connect(url, {
     useUnifiedTopology: true,
     useNewUrlParser: true,

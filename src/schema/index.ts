@@ -1,3 +1,4 @@
 import Auth from "./auth";
-const typeDefs = [Auth];
+import Movies from "./movies";
+const typeDefs = [Auth, Movies];
 export default typeDefs;

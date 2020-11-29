@@ -3,7 +3,7 @@ services:
   graphapi:
     build: .
     ports:
-      - "3000:3000"
+      - "3300:3200"
     depends_on:
       - mongodb
     command:
