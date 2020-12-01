@@ -12,8 +12,12 @@ const typeDef = `
         duration: Int!
         actors: [String!]!
         username: String!
-        averageNote: Int!
+        averageNote: Float!
         ratings: [Rating]
+    }
+    
+    type MovieDeletion {
+        id: String
     }
     
     extend type Query {
@@ -21,7 +25,15 @@ const typeDef = `
         getMovie (movieId: String!): Movie
     }
     
-    input MovieInput {
+    input AddMovieInput {
+        name: String!
+        releaseDate: String!
+        duration: Int!
+        actors: [String!]!
+    }
+    
+    input EditMovieInput {
+        movieId: String!
         name: String!
         releaseDate: String!
         duration: Int!
@@ -29,9 +41,10 @@ const typeDef = `
     }
 
     extend type Mutation {
-        addMovie (input: MovieInput): Movie
+        addMovie (input: AddMovieInput): Movie
         rateMovie (movieId: String!, note: Int!, comment: String): Movie
-        removeMovie (movieId: String!): Boolean
+        removeMovie (movieId: String!): MovieDeletion
+        editMovie (input: EditMovieInput): Movie
     }
     
     type Subscription {

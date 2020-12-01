@@ -29,3 +29,7 @@ export interface MovieInfo {
   averageNote: number;
   ratings: RatingInfo[];
 }
+
+export interface MovieDeletionInfo {
+  id?:string
+}

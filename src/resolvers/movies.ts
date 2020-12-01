@@ -1,9 +1,17 @@
 import {Movie, MovieModel, RatingModel} from "../models";
-import {Context, MovieInfo} from "../types";
+import {Context, MovieDeletionInfo, MovieInfo, UserInfo} from "../types";
 import {PubSub} from "apollo-server";
 import {withFilter} from 'graphql-subscriptions';
 
 const pubsub = new PubSub();
+
+const getUserInfo = (ctx: Context): UserInfo => {
+    const {userInfo} = ctx;
+    if (!userInfo) {
+        throw new Error("Not authenticated!");
+    }
+    return userInfo;
+}
 
 const translateMovieModel = (movie: Movie): MovieInfo => ({
     id: movie._id,
@@ -28,11 +36,7 @@ export const ratingSubscription = {
 }
 
 export async function addMovie(_: void, args: any, ctx: Context,): Promise<MovieInfo> {
-
-    const {userInfo} = ctx;
-    if (!userInfo) {
-        throw new Error("Not authenticated!");
-    }
+    const userInfo = getUserInfo(ctx);
 
     const {name, releaseDate, duration, actors} = args.input;
 
@@ -55,15 +59,38 @@ export async function addMovie(_: void, args: any, ctx: Context,): Promise<Movie
     return translateMovieModel(movie);
 }
 
+export async function editMovie(_: void, args: any, ctx: Context,): Promise<MovieInfo> {
+
+    const userInfo = getUserInfo(ctx);
+
+    const {movieId, name, releaseDate, duration, actors} = args.input;
+
+    const foundMovie = await MovieModel.findOne({_id: movieId});
+
+    if (!foundMovie) {
+        throw Error("No movie with provided id exists.");
+    }
+
+    if (userInfo.username !== foundMovie.username) {
+        throw Error("Access denied.");
+    }
+
+    foundMovie.name = name;
+    foundMovie.releaseDate = releaseDate;
+    foundMovie.duration = duration;
+    foundMovie.actors = actors;
+    await foundMovie.save();
+
+    return translateMovieModel(foundMovie);
+}
+
+
 const getNewAverageNote = (ratingSize: number, averageNote: number, newNote: number) =>
     (averageNote * ratingSize + newNote) / (ratingSize + 1);
 
 export async function rateMovie(_: void, args: any, ctx: Context,): Promise<MovieInfo> {
 
-    const {userInfo} = ctx;
-    if (!userInfo) {
-        throw new Error("Not authenticated!");
-    }
+    const userInfo = getUserInfo(ctx);
 
     const {movieId, note, comment} = args;
     const normalizedNote = Math.floor(note);
@@ -107,16 +134,13 @@ export async function rateMovie(_: void, args: any, ctx: Context,): Promise<Movi
 export async function removeMovie(
     _: void,
     _args: any,
-    ctx: Context,): Promise<Boolean> {
+    ctx: Context,): Promise<MovieDeletionInfo> {
 
-    const {userInfo} = ctx;
-    if (!userInfo) {
-        throw new Error("Not authenticated!");
-    }
+    const userInfo = getUserInfo(ctx);
 
     const {movieId} = _args;
-    const result = await MovieModel.deleteOne({username: userInfo.username, id: movieId});
-    return result.deletedCount !== 0;
+    const result = await MovieModel.deleteOne({username: userInfo.username, _id: movieId});
+    return result.deletedCount !== 0 ? {id: movieId} : {id: null};
 }
 
 export async function getMovie(

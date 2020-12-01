@@ -1,5 +1,5 @@
 import {currentUser, register, login} from "./auth";
-import {addMovie, getAllMovies, getMovie, rateMovie, ratingSubscription, removeMovie} from "./movies";
+import {addMovie, editMovie, getAllMovies, getMovie, rateMovie, ratingSubscription, removeMovie} from "./movies";
 
 const resolverMap = {
     Query: {
@@ -13,6 +13,7 @@ const resolverMap = {
         addMovie,
         rateMovie,
         removeMovie,
+        editMovie,
     },
     Subscription: {
         ratingAdded: ratingSubscription
