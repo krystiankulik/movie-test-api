@@ -1,3 +1,5 @@
+import {Dayjs} from "dayjs";
+
 export interface RegisterResponse extends UserInfo {}
 
 export interface LoginResponse {
@@ -22,7 +24,7 @@ export interface RatingInfo {
 export interface MovieInfo {
   id: string;
   name: string;
-  releaseDate: string;
+  releaseDate: Dayjs;
   duration: number;
   actors: string[];
   username: string;

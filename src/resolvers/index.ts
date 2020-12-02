@@ -1,5 +1,6 @@
 import {currentUser, register, login} from "./auth";
 import {addMovie, editMovie, getAllMovies, getMovie, rateMovie, ratingSubscription, removeMovie} from "./movies";
+import {dateScalar} from "./dateScalar";
 
 const resolverMap = {
     Query: {
@@ -17,7 +18,8 @@ const resolverMap = {
     },
     Subscription: {
         ratingAdded: ratingSubscription
-    }
+    },
+    Date: dateScalar
 };
 
 export default resolverMap;

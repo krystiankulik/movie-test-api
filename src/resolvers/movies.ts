@@ -2,6 +2,7 @@ import {Movie, MovieModel, RatingModel} from "../models";
 import {Context, MovieDeletionInfo, MovieInfo, UserInfo} from "../types";
 import {PubSub} from "apollo-server";
 import {withFilter} from 'graphql-subscriptions';
+import {getNewAverageNote, translateMovieModel} from "../utils";
 
 const pubsub = new PubSub();
 
@@ -12,21 +13,6 @@ const getUserInfo = (ctx: Context): UserInfo => {
     }
     return userInfo;
 }
-
-const translateMovieModel = (movie: Movie): MovieInfo => ({
-    id: movie._id,
-    name: movie.name,
-    releaseDate: movie.releaseDate.toUTCString(),
-    duration: movie.duration,
-    actors: movie.actors,
-    username: movie.username,
-    averageNote: movie.averageNote,
-    ratings: movie.ratings.map(rating => ({
-        username: rating.username,
-        note: rating.note,
-        comment: rating.comment
-    }))
-})
 
 export const ratingSubscription = {
     subscribe: withFilter(() => (pubsub.asyncIterator(["RATING_ADDED"])),
@@ -84,9 +70,6 @@ export async function editMovie(_: void, args: any, ctx: Context,): Promise<Movi
     return translateMovieModel(foundMovie);
 }
 
-
-const getNewAverageNote = (ratingSize: number, averageNote: number, newNote: number) =>
-    (averageNote * ratingSize + newNote) / (ratingSize + 1);
 
 export async function rateMovie(_: void, args: any, ctx: Context,): Promise<MovieInfo> {
 

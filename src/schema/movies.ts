@@ -1,4 +1,6 @@
 const typeDef = `
+    scalar Date
+    
     type Rating {
         username: String!
         note: Int!
@@ -8,7 +10,8 @@ const typeDef = `
     type Movie {
         id: ID!
         name: String!
-        releaseDate: String!
+        releaseDate: Date!
+        "Movie duration in minutes."
         duration: Int!
         actors: [String!]!
         username: String!
@@ -35,7 +38,7 @@ const typeDef = `
     input EditMovieInput {
         movieId: String!
         name: String!
-        releaseDate: String!
+        releaseDate: Date!
         duration: Int!
         actors: [String!]!
     }
