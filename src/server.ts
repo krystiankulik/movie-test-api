@@ -42,8 +42,8 @@ async function start() {
                         getUserInfo(req.headers.authorization || "")
                 }
             },
-        }).listen(3000);
-        console.log("GraphQl API running on port 3000.");
+        }).listen(3001);
+        console.log("GraphQl API running on port 3001.");
     } catch (err) {
         console.error(err);
         process.exit(1);
