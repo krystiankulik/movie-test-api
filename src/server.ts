@@ -23,7 +23,6 @@ async function start() {
         await new ApolloServer({
             typeDefs,
             resolvers,
-            cors: true, // not super secure, but should be enough for the purpose of the app
             subscriptions: {
                 onConnect: (connectionParams: any) => {
                     if (connectionParams.authToken) {
