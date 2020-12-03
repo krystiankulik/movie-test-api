@@ -25,7 +25,6 @@ const typeDef = `
     
     extend type Query {
         getAllMovies: [Movie!]!
-        getMovie (movieId: String!): Movie
     }
     
     input AddMovieInput {
@@ -50,8 +49,14 @@ const typeDef = `
         editMovie (input: EditMovieInput): Movie
     }
     
+    type SubscriptionResponse {
+        movieAdded: Movie
+        movieEdited: Movie
+        movieDeleted: String
+    }
+    
     type Subscription {
-        ratingAdded (movieId: String!): Rating
-    }     
+        movieAffected: SubscriptionResponse
+    }
 `;
 export default typeDef;

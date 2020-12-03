@@ -1,12 +1,11 @@
-import {currentUser, register, login} from "./auth";
-import {addMovie, editMovie, getAllMovies, getMovie, rateMovie, ratingSubscription, removeMovie} from "./movies";
+import {currentUser, login, register} from "./auth";
+import {addMovie, editMovie, getAllMovies, movieSubscription, rateMovie, removeMovie} from "./movies";
 import {dateScalar} from "./dateScalar";
 
 const resolverMap = {
     Query: {
         currentUser,
         getAllMovies,
-        getMovie
     },
     Mutation: {
         login,
@@ -17,7 +16,7 @@ const resolverMap = {
         editMovie,
     },
     Subscription: {
-        ratingAdded: ratingSubscription
+        movieAffected: movieSubscription,
     },
     Date: dateScalar
 };

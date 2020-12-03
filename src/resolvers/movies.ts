@@ -1,8 +1,8 @@
 import {Movie, MovieModel, RatingModel} from "../models";
 import {Context, MovieDeletionInfo, MovieInfo, UserInfo} from "../types";
 import {PubSub} from "apollo-server";
-import {withFilter} from 'graphql-subscriptions';
 import {getNewAverageNote, translateMovieModel} from "../utils";
+import dayjs from "dayjs";
 
 const pubsub = new PubSub();
 
@@ -14,16 +14,13 @@ const getUserInfo = (ctx: Context): UserInfo => {
     return userInfo;
 }
 
-export const ratingSubscription = {
-    subscribe: withFilter(() => (pubsub.asyncIterator(["RATING_ADDED"])),
-        (payload, variables) => {
-            return payload.ratingAdded.movieId == variables.movieId;
-        })
+export const movieSubscription = {
+    subscribe: () => (pubsub.asyncIterator(["MOVIE_ACTION"])),
 }
 
 export async function addMovie(_: void, args: any, ctx: Context,): Promise<MovieInfo> {
     const userInfo = getUserInfo(ctx);
-
+    console.log(args)
     const {name, releaseDate, duration, actors} = args.input;
 
     const foundMovie = await MovieModel.findOne({name: name});
@@ -33,7 +30,7 @@ export async function addMovie(_: void, args: any, ctx: Context,): Promise<Movie
 
     const movie: Movie = new MovieModel({
         name,
-        releaseDate: new Date(releaseDate),
+        releaseDate: dayjs(releaseDate).toDate(),
         duration,
         actors: actors,
         username: userInfo.username,
@@ -42,6 +39,11 @@ export async function addMovie(_: void, args: any, ctx: Context,): Promise<Movie
     });
     await movie.save();
 
+    await pubsub.publish("MOVIE_ACTION", {
+        movieAffected: {
+            movieAdded: translateMovieModel(movie)
+        }
+    });
     return translateMovieModel(movie);
 }
 
@@ -62,11 +64,16 @@ export async function editMovie(_: void, args: any, ctx: Context,): Promise<Movi
     }
 
     foundMovie.name = name;
-    foundMovie.releaseDate = releaseDate;
+    foundMovie.releaseDate = dayjs(releaseDate).toDate();
     foundMovie.duration = duration;
     foundMovie.actors = actors;
     await foundMovie.save();
 
+    await pubsub.publish("MOVIE_ACTION", {
+        movieAffected: {
+            movieEdited: translateMovieModel(foundMovie)
+        }
+    });
     return translateMovieModel(foundMovie);
 }
 
@@ -103,12 +110,9 @@ export async function rateMovie(_: void, args: any, ctx: Context,): Promise<Movi
     movie.ratings.push(rating);
     await movie.save();
 
-    pubsub.publish("RATING_ADDED", {
-        ratingAdded: {
-            username: userInfo.username,
-            note: normalizedNote,
-            comment: comment,
-            movieId: movie._id,
+    await pubsub.publish("MOVIE_ACTION", {
+        movieAffected: {
+            movieEdited: translateMovieModel(movie)
         }
     });
     return translateMovieModel(movie);
@@ -123,15 +127,14 @@ export async function removeMovie(
 
     const {movieId} = _args;
     const result = await MovieModel.deleteOne({username: userInfo.username, _id: movieId});
-    return result.deletedCount !== 0 ? {id: movieId} : {id: null};
-}
+    console.log(movieId)
+    await pubsub.publish("MOVIE_ACTION", {
+        movieAffected: {
+            movieDeleted: movieId
+        }
+    });
 
-export async function getMovie(
-    _: void,
-    _args: any): Promise<MovieInfo | null> {
-    const {movieId} = _args;
-    const movie = await MovieModel.findOne({_id: movieId});
-    return movie ? translateMovieModel(movie) : null;
+    return result.deletedCount !== 0 ? {id: movieId} : {id: null};
 }
 
 export async function getAllMovies(

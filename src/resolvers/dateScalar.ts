@@ -8,7 +8,7 @@ export const dateScalar =  new GraphQLScalarType({
         return dayjs(value);
     },
     serialize(value) {
-        return dayjs(value).format("MM-DD-YYYY");
+        return dayjs(value).format();
     },
     parseLiteral(ast) {
         if (ast.kind === Kind.STRING) {
